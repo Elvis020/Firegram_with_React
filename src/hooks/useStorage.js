@@ -1,5 +1,9 @@
 import {useState,useEffect} from 'react'
-import  {projectStorage} from '../firebase/config'
+import {
+    projectStorage,
+    projectFirestore,
+    timeStamp
+} from '../firebase/config'
 
 
 
@@ -13,18 +17,30 @@ function useStorage(file) {
 
     // Setting up useEffect
     useEffect(() => {
-        // References to where the fils should be saved
+
+
+        // References to where the files should be saved in both firestorage and firestore database
         const storageRef = projectStorage.ref(file.name)
+        const collectionRef = projectFirestore.collection('images')
 
 
         // To upload the reference file, and take snapshots of the file as it uploads
-        storageRef.put(file).on('state_changed')
+        storageRef.put(file).on('state_changed', (snap)=> {
+            let percentage = (snap.bytesTransferred / snap.totalBytes) * 100;
+            setProgress(percentage)
+        }, (err) =>{
+            setError(err)
+        }, async() => {
+            // FUnction that fires when the upload is complete
+            const url = await storageRef.getDownloadURL();
+
+            // Adding file to firestore database
+            const createdAt = timeStamp();
+            collectionRef.add({ url, createdAt });
+            setUrl(url)
+        })
     }, [file])
-    return (
-        <div>
-            
-        </div>
-    )
+    return {progress, url, error}
 }
 
-export default useStorage
+export default useStorage;

@@ -25,4 +25,13 @@ const projectStorage = firebase.storage();
 const projectFirestore = firebase.firestore();
 
 
-export {projectStorage, projectFirestore}
+// Creating a firebase timestamp to monitor the timestamp at which the file is uploaded.
+//NB: This is something created by firebase
+const timeStamp = firebase.firestore.FieldValue.serverTimestamp
+
+
+export {
+    projectStorage,
+    projectFirestore,
+    timeStamp
+}
